@@ -153,21 +153,6 @@ DB_URL=your_database_url
 
 ---
 
-## 👨‍💻 Contributors
-
-| Name                              | Role                    |
-| --------------------------------- | ----------------------- |
-| **Yuuqi (Manisha Adhikari)**      | Project Lead, Developer |
-| *(Add other contributors if any)* |                         |
-
----
-
-## 🛠️ License
-
-This project is licensed under the **MIT License** – free to use, modify, and distribute with proper credit.
-
----
-
 ## 🌱 Vision
 
 > “Empowering every Indian farmer with the knowledge, tools, and technology they need — one conversation at a time.”
