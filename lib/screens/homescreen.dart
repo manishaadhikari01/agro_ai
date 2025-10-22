@@ -1,7 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'disease_detection.dart';
+import 'chatbot_screen.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  _DashboardScreenState createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  String userName = 'Ramesh'; // Default name
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('userName') ?? 'Ramesh';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,9 +37,9 @@ class DashboardScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Greeting
-              const Text(
-                'Hello Ramesh 👋',
-                style: TextStyle(
+              Text(
+                'Hello $userName 👋',
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -77,21 +100,53 @@ class DashboardScreen extends StatelessWidget {
                     'Disease Detection',
                     Icons.camera_alt,
                     Colors.green.shade700,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DiseaseDetectionScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildFeatureCard(
                     'AI Chatbot',
                     Icons.chat,
                     Colors.green.shade700,
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ChatbotScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildFeatureCard(
                     'Soil Health',
                     Icons.grass,
                     Colors.green.shade700,
+                    () {
+                      // Navigate to Soil Health screen
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Soil Health screen coming soon!'),
+                        ),
+                      );
+                    },
                   ),
                   _buildFeatureCard(
                     'Govt Schemes',
                     Icons.account_balance,
                     Colors.green.shade700,
+                    () {
+                      // Navigate to Govt Schemes screen
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Govt Schemes screen coming soon!'),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -117,14 +172,17 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureCard(String title, IconData icon, Color color) {
+  Widget _buildFeatureCard(
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: () {
-          // Navigate to respective screen
-        },
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
