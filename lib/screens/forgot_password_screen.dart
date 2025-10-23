@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../controllers/auth_controller.dart';
 import 'login_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -10,10 +12,13 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   bool _isRequestSent = false;
 
   @override
   Widget build(BuildContext context) {
+    final authController = Provider.of<AuthController>(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFF0A2216), // Dark forest green
       body: SafeArea(
@@ -43,33 +48,41 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
               const SizedBox(height: 40),
               if (!_isRequestSent) ...[
-                TextField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email / Username',
-                    labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
+                Form(
+                  key: _formKey,
+                  child: TextFormField(
+                    controller: _emailController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Email / Username',
+                      labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
+                      ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                    ),
+                    style: const TextStyle(color: Colors.white),
+                    keyboardType: TextInputType.emailAddress,
                   ),
-                  style: const TextStyle(color: Colors.white),
-                  keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 40),
                 ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement password reset logic
-                    setState(() {
-                      _isRequestSent = true;
-                    });
-                  },
+                  onPressed:
+                      authController.isLoading ? null : _requestPasswordReset,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFE0E7C8),
                     foregroundColor: const Color(0xFF0A2216),
@@ -79,10 +92,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     minimumSize: const Size(double.infinity, 50),
                   ),
-                  child: const Text(
-                    'Request New Password',
-                    style: TextStyle(fontSize: 18, fontFamily: 'Inter'),
-                  ),
+                  child:
+                      authController.isLoading
+                          ? const CircularProgressIndicator()
+                          : const Text(
+                            'Request New Password',
+                            style: TextStyle(fontSize: 18, fontFamily: 'Inter'),
+                          ),
                 ),
               ] else ...[
                 const Icon(
@@ -141,5 +157,34 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _requestPasswordReset() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final success = await authController.forgotPassword(
+      _emailController.text.trim(),
+    );
+
+    if (success && mounted) {
+      setState(() {
+        _isRequestSent = true;
+      });
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to send reset email. Please try again.'),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
   }
 }

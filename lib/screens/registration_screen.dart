@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import '../controllers/auth_controller.dart';
+import '../utils/config.dart';
 import 'login_screen.dart';
 import 'main_app_screen.dart';
 
@@ -20,6 +22,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController _stateController = TextEditingController();
   final TextEditingController _cropsController = TextEditingController();
 
+  final _basicFormKey = GlobalKey<FormState>();
+  final _additionalFormKey = GlobalKey<FormState>();
+
   String? _selectedFarmerType;
   bool _showAdditionalDetails = false;
 
@@ -30,6 +35,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authController = Provider.of<AuthController>(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFF0A2216), // Dark forest green
       body: SafeArea(
@@ -50,229 +57,348 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               ),
               const SizedBox(height: 40),
 
-              // Basic Information
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Full Name',
-                  labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _mobileController,
-                decoration: InputDecoration(
-                  labelText: 'Mobile Number',
-                  labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Confirm Password',
-                  labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 30),
-
-              // Next Button for Basic Info
+              // Basic Information Form
               if (!_showAdditionalDetails)
-                ElevatedButton(
-                  onPressed: _validateBasicInfo,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE0E7C8),
-                    foregroundColor: const Color(0xFF0A2216),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  child: const Text(
-                    'Next',
-                    style: TextStyle(fontSize: 18, fontFamily: 'Inter'),
+                Form(
+                  key: _basicFormKey,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _nameController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your full name';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Full Name',
+                          labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _emailController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                            return 'Please enter a valid email';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _mobileController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your mobile number';
+                          }
+                          if (!RegExp(r'^\d{10}$').hasMatch(value)) {
+                            return 'Please enter a valid 10-digit mobile number';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Mobile Number',
+                          labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _passwordController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a password';
+                          }
+                          if (value.length < Config.passwordMinLength) {
+                            return 'Password must be at least ${Config.passwordMinLength} characters';
+                          }
+                          return null;
+                        },
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please confirm your password';
+                          }
+                          if (value != _passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: 'Confirm Password',
+                          labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(height: 30),
+                      ElevatedButton(
+                        onPressed:
+                            authController.isLoading
+                                ? null
+                                : _validateBasicInfo,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE0E7C8),
+                          foregroundColor: const Color(0xFF0A2216),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        child:
+                            authController.isLoading
+                                ? const CircularProgressIndicator()
+                                : const Text(
+                                  'Next',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontFamily: 'Inter',
+                                  ),
+                                ),
+                      ),
+                    ],
                   ),
                 ),
 
-              // Additional Details Section
-              if (_showAdditionalDetails) ...[
-                const SizedBox(height: 30),
-                const Text(
-                  'Additional Details',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFE0E7C8),
-                    fontFamily: 'Inter',
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: _stateController,
-                  decoration: InputDecoration(
-                    labelText: 'State',
-                    labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                    ),
-                  ),
-                  style: const TextStyle(color: Colors.white),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: _cropsController,
-                  decoration: InputDecoration(
-                    labelText: 'Crops Grown',
-                    labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                    ),
-                  ),
-                  style: const TextStyle(color: Colors.white),
-                ),
-                const SizedBox(height: 20),
-                DropdownButtonFormField<String>(
-                  value: _selectedFarmerType,
-                  decoration: InputDecoration(
-                    labelText: 'Farmer Type',
-                    labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                    ),
-                  ),
-                  dropdownColor: const Color(0xFF0A2216),
-                  style: const TextStyle(color: Colors.white),
-                  items:
-                      _farmerTypes.map((type) {
-                        return DropdownMenuItem<String>(
-                          value: type,
-                          child: Text(
-                            type,
-                            style: const TextStyle(color: Colors.white),
+              // Additional Details Form
+              if (_showAdditionalDetails)
+                Form(
+                  key: _additionalFormKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 30),
+                      const Text(
+                        'Additional Details',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFE0E7C8),
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _stateController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your state';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'State',
+                          labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
                           ),
-                        );
-                      }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedFarmerType = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: _registerUser,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE0E7C8),
-                    foregroundColor: const Color(0xFF0A2216),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    minimumSize: const Size(double.infinity, 50),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _cropsController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter crops you grow';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Crops Grown',
+                          labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(height: 20),
+                      DropdownButtonFormField<String>(
+                        value: _selectedFarmerType,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a farmer type';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Farmer Type',
+                          labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                        ),
+                        dropdownColor: const Color(0xFF0A2216),
+                        style: const TextStyle(color: Colors.white),
+                        items:
+                            _farmerTypes.map((type) {
+                              return DropdownMenuItem<String>(
+                                value: type,
+                                child: Text(
+                                  type,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              );
+                            }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedFarmerType = value;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 30),
+                      ElevatedButton(
+                        onPressed:
+                            authController.isLoading ? null : _registerUser,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE0E7C8),
+                          foregroundColor: const Color(0xFF0A2216),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        child:
+                            authController.isLoading
+                                ? const CircularProgressIndicator()
+                                : const Text(
+                                  'Register',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontFamily: 'Inter',
+                                  ),
+                                ),
+                      ),
+                    ],
                   ),
-                  child: const Text(
-                    'Register',
-                    style: TextStyle(fontSize: 18, fontFamily: 'Inter'),
-                  ),
                 ),
-              ],
 
               const SizedBox(height: 20),
               Center(
@@ -302,66 +428,42 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   void _validateBasicInfo() {
-    if (_nameController.text.isEmpty ||
-        _emailController.text.isEmpty ||
-        _mobileController.text.isEmpty ||
-        _passwordController.text.isEmpty ||
-        _confirmPasswordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all required fields')),
-      );
-      return;
+    if (_basicFormKey.currentState!.validate()) {
+      setState(() {
+        _showAdditionalDetails = true;
+      });
     }
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Passwords do not match')));
-      return;
-    }
-
-    if (_passwordController.text.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password must be at least 6 characters')),
-      );
-      return;
-    }
-
-    setState(() {
-      _showAdditionalDetails = true;
-    });
   }
 
   Future<void> _registerUser() async {
-    if (_stateController.text.isEmpty ||
-        _cropsController.text.isEmpty ||
-        _selectedFarmerType == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all additional details')),
-      );
+    if (!_additionalFormKey.currentState!.validate()) {
       return;
     }
 
-    // Save user data to SharedPreferences
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', true);
-    await prefs.setString('userName', _nameController.text);
-    await prefs.setString('email', _emailController.text);
-    await prefs.setString('mobile', _mobileController.text);
-    await prefs.setString('password', _passwordController.text);
-    await prefs.setString('state', _stateController.text);
-    await prefs.setString('crops', _cropsController.text);
-    await prefs.setString('farmerType', _selectedFarmerType!);
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Registration successful!')));
-
-    // Navigate to main app
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const MainAppScreen()),
+    final authController = Provider.of<AuthController>(context, listen: false);
+    final success = await authController.registerUser(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      phone: _mobileController.text.trim(),
+      password: _passwordController.text,
+      state: _stateController.text.trim(),
+      crops: _cropsController.text.trim(),
+      farmerType: _selectedFarmerType,
     );
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Registration successful!')));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MainAppScreen()),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registration failed. Please try again.')),
+      );
+    }
   }
 
   @override

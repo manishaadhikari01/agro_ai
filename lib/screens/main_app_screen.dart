@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../controllers/auth_controller.dart';
 import 'chatbot_screen.dart';
 import 'homescreen.dart';
 import 'profile.dart';
 import 'weather.dart';
+import 'user_check_screen.dart';
 
 class MainAppScreen extends StatefulWidget {
   const MainAppScreen({super.key});
@@ -14,11 +17,11 @@ class MainAppScreen extends StatefulWidget {
 class _MainAppScreenState extends State<MainAppScreen> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _screens = [
-    DashboardScreen(),
-    WeatherScreen(),
-    ChatbotScreen(),
-    ProfileScreen(),
+  static List<Widget> _screens = [
+    const DashboardScreen(),
+    const WeatherScreen(),
+    const ChatbotScreen(),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -29,7 +32,28 @@ class _MainAppScreenState extends State<MainAppScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authController = Provider.of<AuthController>(context);
+
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('DeepShiva'),
+        backgroundColor: const Color(0xFF0A2216),
+        foregroundColor: const Color(0xFFE0E7C8),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              authController.logout();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const UserCheckScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -42,7 +66,7 @@ class _MainAppScreenState extends State<MainAppScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.green.shade700,
+        selectedItemColor: const Color(0xFF0A2216),
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
       ),
