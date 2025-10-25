@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'disease_detection.dart';
 import 'chatbot_screen.dart';
+import 'gov_schemes_screen.dart';
+import 'soil_health_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -127,10 +129,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Icons.grass,
                     Colors.green.shade700,
                     () {
-                      // Navigate to Soil Health screen
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Soil Health screen coming soon!'),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SoilHealthScreen(),
                         ),
                       );
                     },
@@ -140,10 +142,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Icons.account_balance,
                     Colors.green.shade700,
                     () {
-                      // Navigate to Govt Schemes screen
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Govt Schemes screen coming soon!'),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const GovSchemesScreen(),
                         ),
                       );
                     },
