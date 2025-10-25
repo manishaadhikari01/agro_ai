@@ -58,12 +58,12 @@ class AuthController extends ChangeNotifier {
   }
 
   // User Login
-  Future<bool> loginUser(String email, String password) async {
+  Future<bool> loginUser(String phone, String password) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final result = await AuthService.loginUser(email, password);
+      final result = await AuthService.loginUser(phone, password);
       if (result != null) {
         _currentUser = result['user'];
         _authToken = result['token'];

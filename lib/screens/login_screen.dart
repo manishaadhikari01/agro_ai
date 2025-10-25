@@ -14,7 +14,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -44,18 +44,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 40),
                 TextFormField(
-                  controller: _emailController,
+                  controller: _phoneController,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
+                      return 'Please enter your phone number';
                     }
-                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                      return 'Please enter a valid email';
+                    if (!RegExp(r'^\d{10}$').hasMatch(value)) {
+                      return 'Please enter a valid 10-digit phone number';
                     }
                     return null;
                   },
                   decoration: InputDecoration(
-                    labelText: 'Email / Username',
+                    labelText: 'Phone Number',
                     labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.1),
@@ -69,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   style: const TextStyle(color: Colors.white),
-                  keyboardType: TextInputType.emailAddress,
+                  keyboardType: TextInputType.phone,
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -176,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final authController = Provider.of<AuthController>(context, listen: false);
     final success = await authController.loginUser(
-      _emailController.text.trim(),
+      _phoneController.text.trim(),
       _passwordController.text,
     );
 
@@ -190,14 +190,14 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid email or password')),
+        const SnackBar(content: Text('Invalid phone number or password')),
       );
     }
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
   }

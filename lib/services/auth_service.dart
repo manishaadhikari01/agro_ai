@@ -48,7 +48,7 @@ class AuthService {
 
   // User Login
   static Future<Map<String, dynamic>?> loginUser(
-    String email,
+    String phone,
     String password,
   ) async {
     try {
@@ -58,7 +58,7 @@ class AuthService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${Config.apiKey}', // If API key is required
         },
-        body: jsonEncode({'email': email, 'password': password}),
+        body: jsonEncode({'phone': phone, 'password': password}),
       );
 
       if (response.statusCode == 200) {

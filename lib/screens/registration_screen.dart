@@ -72,7 +72,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           return null;
                         },
                         decoration: InputDecoration(
-                          labelText: 'Full Name',
+                          labelText: 'Full Name*',
                           labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.1),
@@ -90,6 +90,39 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                         ),
                         style: const TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _mobileController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your mobile number';
+                          }
+                          if (!RegExp(r'^\d{10}$').hasMatch(value)) {
+                            return 'Please enter a valid 10-digit mobile number';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Mobile Number*',
+                          labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                        keyboardType: TextInputType.phone,
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
@@ -123,39 +156,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         style: const TextStyle(color: Colors.white),
                         keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        controller: _mobileController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your mobile number';
-                          }
-                          if (!RegExp(r'^\d{10}$').hasMatch(value)) {
-                            return 'Please enter a valid 10-digit mobile number';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'Mobile Number',
-                          labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
-                          filled: true,
-                          fillColor: Colors.white.withOpacity(0.1),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE0E7C8),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE0E7C8),
-                            ),
-                          ),
-                        ),
-                        style: const TextStyle(color: Colors.white),
-                        keyboardType: TextInputType.phone,
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
