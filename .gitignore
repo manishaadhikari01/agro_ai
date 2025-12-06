@@ -1,3 +1,33 @@
+#backend
+venv/
+backend/venv
+
+.env
+.env.*
+*.env
+.env.txt
+
+__pycache__/
+*/__pycache__/
+
+chatbot/model/
+models/
+model/
+*.bin
+*.safetensors
+*.pt
+*.gguf
+
+build/
+bin/
+dist/
+*.pyc
+*.pyo
+*.pyd
+.cache/
+
+
+
 # Miscellaneous
 *.class
 *.log
@@ -43,3 +73,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+#vs code
+.vscode/
+.idea/
