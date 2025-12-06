@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+langchain
+transformers
+torch
+accelerate
+sentence-transformers
+faiss-cpu
+huggingface_hub
+python-dotenv
+psycopg2-binary
+pydantic
+bitsandbytes
