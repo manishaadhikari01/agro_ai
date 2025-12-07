@@ -1,0 +1,20 @@
+# Irrigation & Water Management
+# Source: ICAR, FAO, KVK
+
+General Irrigation Principles:
+- Irrigate based on crop stage and soil moisture
+- Avoid waterlogging; ensure drainage
+- Drip irrigation saves 30–50% water
+
+Critical stages for major crops:
+- Rice: Tillering, panicle initiation
+- Wheat: CRI stage, heading, grain filling
+- Cotton: Flowering & boll formation
+- Maize: Tasseling, silking
+
+Scheduling:
+- Use IMD weather forecasts to plan irrigation
+- Avoid irrigating before heavy rainfall predictions
+
+FAO Guidelines:
+- Use ET-based irrigation where automated systems exist

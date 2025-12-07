@@ -1,0 +1,110 @@
+# Disease Knowledge Base
+# Trusted Sources: ICAR, PlantVillage, CIBRC
+
+Tomato – Late Blight:
+- Symptoms: Brown lesions, white fungus underside.
+- Management: Mancozeb, Metalaxyl; avoid overhead irrigation.
+
+Tomato – Early Blight:
+- Concentric ring patterns.
+- Management: Chlorothalonil, crop rotation.
+
+Tomato – Leaf Curl Virus:
+- Vector: Whitefly.
+- Control: Yellow sticky traps, neem oil, imidacloprid (label dose).
+
+Potato – Early Blight:
+- Bull’s-eye spots.
+- Control: Mancozeb sprays.
+
+Potato – Late Blight:
+- Rapid leaf blackening.
+- Control: Metalaxyl-M + Mancozeb.
+
+Rice – Blast:
+- Diamond-shaped lesions.
+- Control: Tricyclazole.
+
+Rice – Bacterial Leaf Blight:
+- Yellow edge lesions.
+- Control: Copper oxychloride.
+
+Rice – Sheath Blight:
+- Moist conditions.
+- Control: Validamycin.
+
+Wheat – Rust (Brown/Black/Yellow):
+- Orange or black pustules.
+- Control: Propiconazole.
+
+Chilli – Powdery Mildew:
+- White powder.
+- Control: Sulphur dusting.
+
+Chilli – Anthracnose:
+- Sunken dark lesions.
+- Control: Carbendazim.
+
+Cotton – Boll Rot:
+- Fruit rot during rains.
+- Control: Carbendazim + Mancozeb spray.
+
+Cotton – Leaf Curl Virus:
+- Vector: Whitefly.
+- Management: Vector control essential.
+
+Sugarcane – Red Rot:
+- Reddish internal tissue.
+- Control: Resistant varieties.
+
+Maize – Turcicum Leaf Blight:
+- Cigar-shaped lesions.
+- Control: Mancozeb.
+
+Maize – Downy Mildew:
+- White fungal growth underside.
+- Control: Metalaxyl.
+
+Cucumber – Downy Mildew:
+- Yellow patches.
+- Control: Chlorothalonil.
+
+Brinjal – Fruit & Shoot Borer:
+- Larvae bore into shoots.
+- Control: Pheromone traps, emamectin benzoate.
+
+Mango – Powdery Mildew:
+- White powder on new leaves.
+- Control: Wettable Sulphur.
+
+Banana – Panama Wilt:
+- Soil fungus
+- Control: Use disease-free suckers.
+
+Banana – Bunchy Top Virus:
+- Aphid transmitted.
+- Control: Roguing + vector control.
+
+Groundnut – Rust:
+- Brown pustules.
+- Control: Tebuconazole.
+
+Groundnut – Leaf Spot:
+- Brown circular spots.
+- Control: Mancozeb.
+
+Citrus – Canker:
+- Raised corky lesions.
+- Control: Copper sprays.
+
+Grapes – Downy Mildew:
+- Oil spots.
+- Control: Metalaxyl.
+
+Grapes – Powdery Mildew:
+- White powder.
+- Control: Sulphur dust.
+
+Pomegranate – Bacterial Blight:
+- Oily spots.
+- Control: Copper oxychloride.

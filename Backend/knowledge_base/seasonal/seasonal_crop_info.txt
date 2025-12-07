@@ -1,0 +1,15 @@
+# Seasonal Cropping Patterns in India
+# Source: Govt of India Crop Calendar, ICAR
+
+Kharif Season (June–October):
+- Major crops: Rice, Maize, Soybean, Cotton, Groundnut, Bajra
+- Rain-fed farming dominant
+
+Rabi Season (October–April):
+- Wheat, Mustard, Barley, Chickpea, Lentils
+
+Zaid Season (March–June):
+- Extra short-duration crops: Watermelon, Cucumber, Moong, Sunflower
+
+Important Notes:
+- Crop calendars differ by state; farmers should follow local KVK schedules

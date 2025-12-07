@@ -1,0 +1,26 @@
+# Government Schemes for Farmers (India)
+# Source: Ministry of Agriculture, Govt of India
+
+PM-KISAN:
+- ₹6000 per year to eligible farmers
+- Direct bank transfer
+- Official site: https://pmkisan.gov.in
+
+Soil Health Card Scheme:
+- Soil testing every 2 years
+- Crop-wise fertilizer recommendations
+- Portal: https://soilhealth.dac.gov.in
+
+PMFBY (Crop Insurance):
+- Covers natural disaster-related crop loss
+- Subsidized premium
+
+Kisan Credit Card (KCC):
+- Low-interest credit for all agriculture activities
+
+PM Kusum:
+- Solar pumps & renewable energy farming support
+
+e-NAM:
+- National-level online mandi system
+- Portal: https://enam.gov.in
