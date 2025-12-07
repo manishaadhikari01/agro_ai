@@ -1,4 +1,10 @@
-# backend_fastapi/chatbot/agent.py
+def generate_text(prompt: str) -> str:
+    return f"[Dummy Offline Bot] Backend is running. You said: {prompt}"
+
+def get_bot_reply(query: str) -> str:
+    return generate_text(query)
+
+'''# backend_fastapi/chatbot/agent.py
 
 # backend_fastapi/chatbot/agent.py
 
@@ -32,3 +38,4 @@ def get_bot_reply(query: str) -> str:
     except Exception as e:
         print(f"❌ Error: {e}")
         return "Sorry, I'm having trouble generating a response right now."
+'''

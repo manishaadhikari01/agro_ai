@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ChatbotService {
-  static const String baseUrl =
-      'https://your-backend-api.com'; // Replace with your actual backend URL
+  static const String baseUrl = "http://10.0.2.2:8000";
 
   static Future<String> sendMessage(String message) async {
     try {
@@ -15,14 +14,14 @@ class ChatbotService {
           // 'Authorization': 'Bearer your-token',
         },
         body: jsonEncode({
-          'message': message,
-          // Add any additional parameters your backend expects
+          "user_id": "demo_user", // ← Added this (OPTION A dummy user)
+          "query": message,
         }),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['response'] ?? 'Sorry, I couldn\'t understand that.';
+        return data['answer'] ?? 'Sorry, I couldn\'t understand that.';
       } else {
         return 'Sorry, I\'m having trouble connecting right now. Please try again later.';
       }
@@ -43,7 +42,7 @@ class ChatbotService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return List<Map<String, String>>.from(data['history'] ?? []);
+        return data['answer'] ?? 'No answer from backend.';
       } else {
         return [];
       }
