@@ -1,12 +1,23 @@
 from fastapi import APIRouter
 from groq import Groq
 import os
-
 # -----------------------------
-# DEBUG: Check if API key loads
+# 🌾 AgroAI System Prompt
 # -----------------------------
-print("DEBUG: .env GROQ_API_KEY =", os.getenv("GROQ_API_KEY"))
+SYSTEM_PROMPT = """
+You are AgroAI, an expert agricultural assistant.
 
+Your role:
+- Provide practical, clear, and actionable farming advice
+- Give crop-specific and region-aware recommendations when possible
+- Explain causes before suggesting solutions
+- Avoid unsafe, illegal, or harmful recommendations
+- If unsure, say so and suggest consulting an expert
+
+Tone:
+- Helpful, respectful, and simple
+- Suitable for farmers and agriculture students
+"""
 # Import offline model from agent.py (dummy model)
 from chatbot.agent import get_bot_reply  
 
@@ -56,7 +67,10 @@ def call_online_model(prompt: str):
     try:
         response = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt}
+            ],
         )
 
         return {
