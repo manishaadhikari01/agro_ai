@@ -1,7 +1,7 @@
 class Config {
   // Backend API Configuration
   static const String baseUrl =
-      'https://your-backend-api.com'; // Replace with actual backend URL
+      'http://10.0.2.2:8000'; // Replace with actual backend URL
   static const String apiKey =
       'your-api-key'; // Replace with actual API key if needed
 

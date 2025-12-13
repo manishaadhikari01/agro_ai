@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../utils/config.dart';
 
 class ChatbotService {
-  static const String baseUrl = "http://10.0.2.2:8000";
+  // static const String baseUrl = "http://10.0.2.2:8000"; // Removed hardcoded URL
 
   static Future<String> sendMessage(String message) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/chat'),
+        Uri.parse('${Config.baseUrl}/chat'),
         headers: {
           'Content-Type': 'application/json',
           // Add authentication headers if needed
@@ -34,7 +35,7 @@ class ChatbotService {
   static Future<List<Map<String, String>>> getChatHistory() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/chat/history'),
+        Uri.parse('${Config.baseUrl}/chat/history'),
         headers: {
           // Add authentication headers if needed
         },
