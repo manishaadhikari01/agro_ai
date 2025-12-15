@@ -1,5 +1,3 @@
-# main.py
-
 import os, json, hashlib
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,23 +6,18 @@ from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-# Local imports
-from routes import audit, farmers
+from routes import audit, farmers, auth
 from routes.chat import unified_chat
 from routes.chat import router as chat_router
-from chatbot.utils import heuristic_enrich  # optional
+from chatbot.utils import heuristic_enrich
 from db.session import get_session, engine
 from db import models
 from db.models import User, Message
+from auth.jwt import get_current_user
+from routes import users
 
-# ---------------------------------------------------------------------
-# 🌱 Load environment variables
-# ---------------------------------------------------------------------
 load_dotenv()
 
-# ---------------------------------------------------------------------
-# 🚀 Initialize FastAPI app
-# ---------------------------------------------------------------------
 app = FastAPI(title="AgroAI Backend 🌾", version="1.0")
 
 app.add_middleware(
@@ -35,22 +28,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------------------------------------------------------------
-# 🧱 Database Initialization
-# ---------------------------------------------------------------------
+MEMORY_LIMIT = 5
+
+IGNORED_PHRASES = {
+    "hi", "hello", "hey", "ok", "okay",
+    "thanks", "thank you", "yes", "no"
+}
+
+def is_useful_message(text: str) -> bool:
+    text = text.lower().strip()
+    return len(text) >= 5 and text not in IGNORED_PHRASES
+
+
+# ------------------ DB INIT ------------------
 @app.on_event("startup")
 async def startup():
     async with engine.begin() as conn:
         await conn.run_sync(models.Base.metadata.create_all)
     print("✅ Database initialized successfully!")
-    print("🤖 Chat system ready (Groq + Offline fallback)")
+    print("🔐 Chat is JWT protected")
 
-# ---------------------------------------------------------------------
-# 🧩 Pydantic Schemas
-# ---------------------------------------------------------------------
+
+# ------------------ SCHEMAS ------------------
 class ChatRequest(BaseModel):
-    user_id: str
     query: str
+
 
 class ChatResponse(BaseModel):
     answer: str
@@ -58,9 +60,8 @@ class ChatResponse(BaseModel):
     fabric_tx_id: str | None = None
     polygon_tx_hash: str | None = None
 
-# ---------------------------------------------------------------------
-# 🔐 Utility functions
-# ---------------------------------------------------------------------
+
+# ------------------ UTILS ------------------
 def canonical_record(user_id: str, query: str, reply: str) -> bytes:
     payload = json.dumps(
         {"user_id": user_id, "query": query, "reply": reply},
@@ -70,38 +71,51 @@ def canonical_record(user_id: str, query: str, reply: str) -> bytes:
     )
     return payload.encode("utf-8")
 
+
 def sha256_hex(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
-# ---------------------------------------------------------------------
-# 💬 Chat Endpoint – MAIN ENTRY POINT
-# ---------------------------------------------------------------------
+
+# ------------------ CHAT (JWT PROTECTED) ------------------
 @app.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(req: ChatRequest, session: AsyncSession = Depends(get_session)):
+async def chat_endpoint(
+    req: ChatRequest,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
     try:
-        # ✅ User lookup / creation
+        user = current_user  # 🔐 identity from JWT
+
+        # 🔁 Load conversation memory
         result = await session.execute(
-            select(User).where(User.external_id == req.user_id)
+            select(Message)
+            .where(Message.user_id == user.id)
+            .order_by(Message.created_at.desc())
+            .limit(MEMORY_LIMIT)
         )
-        user = result.scalar_one_or_none()
+        past_messages = result.scalars().all()
 
-        if not user:
-            user = User(external_id=req.user_id)
-            session.add(user)
-            await session.flush()
+        history = [
+            {"query": m.query, "reply": m.reply}
+            for m in reversed(past_messages)
+            if is_useful_message(m.query)
+        ]
 
-        # ✅ CALL ONLINE/OFFLINE CHAT LOGIC (Groq → fallback)
-        chat_result = unified_chat(query=req.query, mode="auto")
+        # 🤖 Online → Offline logic
+        chat_result = unified_chat(
+            query=req.query,
+            history=history,
+            mode="auto"
+        )
+
         base_reply = chat_result["answer"]
-
-        # Optional heuristic enrichment
         full_reply = (
             heuristic_enrich(req.query, base_reply)
             if "heuristic_enrich" in globals()
             else base_reply
         )
 
-        # ✅ Save message
+        # 💾 Save message
         msg = Message(
             user_id=user.id,
             query=req.query,
@@ -112,47 +126,45 @@ async def chat_endpoint(req: ChatRequest, session: AsyncSession = Depends(get_se
         session.add(msg)
         await session.flush()
 
-        # ✅ Hash record
-        record_hash = sha256_hex(
-            canonical_record(req.user_id, req.query, full_reply)
+        msg.record_hash = sha256_hex(
+            canonical_record(user.id, req.query, full_reply)
         )
-        msg.record_hash = record_hash
-        await session.flush()
 
         await session.commit()
 
         return ChatResponse(
             answer=full_reply,
-            message_id=str(msg.id),
-            fabric_tx_id=None,
-            polygon_tx_hash=None
+            message_id=str(msg.id)
         )
 
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-# ---------------------------------------------------------------------
-# 🩺 Health Check
-# ---------------------------------------------------------------------
+# ------------------ HEALTH ------------------
 @app.get("/health")
-async def health_check():
-    return {
-        "status": "running",
-        "chat_model": "Groq (online) + Dummy (offline)",
-        "database": "connected"
-    }
+async def health_check(session: AsyncSession = Depends(get_session)):
+    health = {"status": "ok", "db": "unknown"}
 
-# ---------------------------------------------------------------------
-# 🏠 Root
-# ---------------------------------------------------------------------
+    try:
+        await session.execute(select(User).limit(1))
+        health["db"] = "connected"
+    except Exception:
+        health["db"] = "disconnected"
+        health["status"] = "degraded"
+
+    return health
+
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to AgroAI Backend 🚜"}
 
-# ---------------------------------------------------------------------
-# 🔗 Routers
-# ---------------------------------------------------------------------
+
+# ------------------ ROUTERS ------------------
 app.include_router(audit.router, prefix="/audit", tags=["Audit"])
 app.include_router(farmers.router, prefix="/farmers", tags=["Farmers"])
 app.include_router(chat_router, prefix="/api", tags=["Chat"])
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(users.router, prefix="/users", tags=["Users"])
+
