@@ -26,6 +26,9 @@ dist/
 *.pyd
 .cache/
 
+# Model weights / checkpoints
+ml_models/plant_disease/checkpoints/
+*.pth
 
 
 # Miscellaneous
@@ -42,6 +45,24 @@ dist/
 .swiftpm/
 migrate_working_dir/
 TODO.md
+
+# Model files (VERY IMPORTANT)
+*.pkl
+*.joblib
+*.h5
+*.onnx
+
+# Large datasets / CSVs
+*.csv
+*.xlsx
+*.tsv
+
+
+# Test outputs
+coverage/
+*.tmp
+*.bak
+
 
 # IntelliJ related
 *.iml

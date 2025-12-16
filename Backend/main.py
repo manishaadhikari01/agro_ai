@@ -15,6 +15,8 @@ from db import models
 from db.models import User, Message
 from auth.jwt import get_current_user
 from routes import users
+from routes.plant_disease import router as plant_disease_router
+from routes.crop_recommendation import router as crop_router
 
 load_dotenv()
 
@@ -167,4 +169,6 @@ app.include_router(farmers.router, prefix="/farmers", tags=["Farmers"])
 app.include_router(chat_router, prefix="/api", tags=["Chat"])
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(plant_disease_router)
+app.include_router(crop_router)
 

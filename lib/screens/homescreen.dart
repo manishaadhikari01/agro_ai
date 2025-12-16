@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'disease_detection.dart';
 import 'chatbot_screen.dart';
 import 'gov_schemes_screen.dart';
-import 'soil_health_screen.dart';
+import 'crop_recommendation.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -132,7 +132,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const SoilHealthScreen(),
+                          builder:
+                              (context) => const CropRecommendationScreen(),
                         ),
                       );
                     },

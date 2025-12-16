@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../utils/config.dart';
 
 class DiseaseDetectionScreen extends StatefulWidget {
   const DiseaseDetectionScreen({super.key});
@@ -12,7 +15,8 @@ class DiseaseDetectionScreen extends StatefulWidget {
 class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen> {
   File? _image;
   final ImagePicker _picker = ImagePicker();
-  String? _result;
+  Map<String, dynamic>? _result;
+  bool _isLoading = false;
 
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source);
@@ -20,16 +24,58 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen> {
       setState(() {
         _image = File(pickedFile.path);
       });
-      // Simulate AI analysis
-      _analyzeImage();
+      await _analyzeImage();
     }
   }
 
-  void _analyzeImage() {
-    // Placeholder for AI analysis
+  //void _analyzeImage() {
+  // Placeholder for AI analysis
+  // setState(() {
+  //   _result = 'Severe: Late Blight';
+  // });
+  //}
+
+  Future<void> _analyzeImage() async {
+    if (_image == null) return;
+
     setState(() {
-      _result = 'Severe: Late Blight';
+      _isLoading = true;
+      _result = null;
     });
+
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${Config.baseUrl}/ml/plant-disease/predict'),
+      );
+
+      request.files.add(
+        await http.MultipartFile.fromPath('file', _image!.path),
+      );
+
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        setState(() {
+          _result = jsonDecode(responseBody);
+        });
+      } else {
+        throw Exception('Prediction failed');
+      }
+    } catch (e) {
+      setState(() {
+        _result = {
+          "class": "Error",
+          "confidence": 0.0,
+          "remedy": "Could not analyze image. Please try again.",
+        };
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -116,8 +162,13 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen> {
                 ),
               ),
 
+              if (_isLoading) ...[
+                const SizedBox(height: 30),
+                const CircularProgressIndicator(),
+              ],
+
               // Result
-              if (_result != null) ...[
+              if (_result != null && !_isLoading) ...[
                 const SizedBox(height: 30),
                 Card(
                   elevation: 4,
@@ -130,22 +181,53 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _result!,
+                          "Detected: ${_result!['class']}",
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'Prevention tips: Ensure good air circulation, avoid overhead watering.',
-                          style: TextStyle(fontSize: 14),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Confidence: ${(_result!['confidence'] * 100).toStringAsFixed(1)}%",
                         ),
                         const SizedBox(height: 10),
-                        const Text(
-                          'Treatment advice: Apply targeted fungicides immediately and remove infected plants.',
-                          style: TextStyle(fontSize: 14),
+                        Text(
+                          "Remedy:\n${_result!['remedy']}",
+                          style: const TextStyle(fontSize: 14),
                         ),
+
+                        // ---- Low confidence note (optional) ----
+                        if (_result!['note'] != null) ...[
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade100,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(
+                                  Icons.warning,
+                                  color: Colors.orange,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _result!['note'],
+                                    style: const TextStyle(
+                                      color: Colors.orange,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
