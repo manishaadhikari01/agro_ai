@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
-import 'registration_screen.dart';
+import 'otp_request_screen.dart';
 import 'main_app_screen.dart';
+
+import '../utils/app_mode.dart';
 
 class UserCheckScreen extends StatelessWidget {
   const UserCheckScreen({super.key});
@@ -26,29 +28,23 @@ class UserCheckScreen extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 50),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildButton(context, 'Yes, I\'m registered', () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                      );
-                    }),
-                    const SizedBox(width: 20),
-                    _buildButton(context, 'No, I\'m new', () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RegistrationScreen(),
-                        ),
-                      );
-                    }),
-                  ],
-                ),
+                const SizedBox(height: 40),
+
+                _buildButton(context, 'Yes, I\'m registered', () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  );
+                }),
+
+                const SizedBox(height: 16),
+
+                _buildButton(context, 'No, I\'m new', () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const OtpRequestScreen()),
+                  );
+                }),
               ],
             ),
           ),
@@ -60,7 +56,7 @@ class UserCheckScreen extends StatelessWidget {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const MainAppScreen(),
+                    builder: (_) => const MainAppScreen(mode: AppMode.guest),
                   ),
                 );
               },

@@ -1,3 +1,4 @@
+import 'package:agroai/utils/app_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
@@ -8,35 +9,44 @@ class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkAuthStatus();
+    _init();
   }
 
-  Future<void> _checkAuthStatus() async {
+  Future<void> _init() async {
     final authController = Provider.of<AuthController>(context, listen: false);
-    authController.checkAuthStatus();
 
-    // Simulate splash screen delay
-    await Future.delayed(const Duration(seconds: 2));
+    // ✅ IMPORTANT: wait for auth check
+    try {
+      // Run splash delay & auth check in parallel
+      await Future.wait([
+        authController.checkAuthStatus(),
+        Future.delayed(const Duration(seconds: 2)),
+      ]);
+    } catch (_) {
+      // In case something goes wrong, treat as logged out
+    }
 
-    if (mounted) {
-      if (authController.isLoggedIn) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainAppScreen()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const UserCheckScreen()),
-        );
-      }
+    if (!mounted) return;
+
+    if (authController.isLoggedIn) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const MainAppScreen(mode: AppMode.authenticated),
+        ),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const UserCheckScreen()),
+      );
     }
   }
 

@@ -1,8 +1,9 @@
+from dotenv import load_dotenv
+load_dotenv()
 import os, json, hashlib
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -17,8 +18,10 @@ from auth.jwt import get_current_user
 from routes import users
 from routes.plant_disease import router as plant_disease_router
 from routes.crop_recommendation import router as crop_router
+from routes import govt_data
+from routes.fields import router as fields_router
 
-load_dotenv()
+
 
 app = FastAPI(title="AgroAI Backend 🌾", version="1.0")
 
@@ -171,4 +174,6 @@ app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(users.router, prefix="/users", tags=["Users"])
 app.include_router(plant_disease_router)
 app.include_router(crop_router)
+app.include_router(govt_data.router, prefix="/govt", tags=["Government Data"])
+app.include_router(fields_router)
 

@@ -66,9 +66,10 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen> {
     } catch (e) {
       setState(() {
         _result = {
-          "class": "Error",
-          "confidence": 0.0,
+          "class": [],
+          "confidence": [],
           "remedy": "Could not analyze image. Please try again.",
+          "note": "Error analyzing image.",
         };
       });
     } finally {
@@ -170,67 +171,102 @@ class _DiseaseDetectionScreenState extends State<DiseaseDetectionScreen> {
               // Result
               if (_result != null && !_isLoading) ...[
                 const SizedBox(height: 30),
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Detected: ${_result!['class']}",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          "Confidence: ${(_result!['confidence'] * 100).toStringAsFixed(1)}%",
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "Remedy:\n${_result!['remedy']}",
-                          style: const TextStyle(fontSize: 14),
-                        ),
+                Builder(
+                  builder: (context) {
+                    final List classes = _result!['class'] ?? [];
+                    final List confidences = _result!['confidence'] ?? [];
 
-                        // ---- Low confidence note (optional) ----
-                        if (_result!['note'] != null) ...[
-                          const SizedBox(height: 10),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.shade100,
-                              borderRadius: BorderRadius.circular(8),
+                    return Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // -------- Top prediction --------
+                            Text(
+                              "Most Likely: ${classes.isNotEmpty ? classes[0] : 'Unknown'}",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Icon(
-                                  Icons.warning,
-                                  color: Colors.orange,
-                                  size: 20,
+                            const SizedBox(height: 6),
+
+                            if (confidences.isNotEmpty)
+                              Text(
+                                "Confidence: ${(confidences[0] * 100).toStringAsFixed(1)}%",
+                                style: TextStyle(
+                                  color: Colors.green.shade700,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    _result!['note'],
-                                    style: const TextStyle(
-                                      color: Colors.orange,
-                                      fontSize: 14,
+                              ),
+
+                            const SizedBox(height: 12),
+
+                            // -------- Other possibilities --------
+                            if (classes.length > 1) ...[
+                              const Text(
+                                "Other possibilities:",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 6),
+                              for (int i = 1; i < classes.length; i++)
+                                Text(
+                                  "• ${classes[i]} "
+                                  "(${(confidences[i] * 100).toStringAsFixed(1)}%)",
+                                ),
+                            ],
+
+                            const SizedBox(height: 12),
+
+                            // -------- Remedy --------
+                            const Text(
+                              "Recommended Remedy:",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(_result!['remedy']),
+
+                            // -------- Note --------
+                            if (_result!['note'] != null) ...[
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle,
+                                      color: Colors.green.shade700,
+                                      size: 20,
                                     ),
-                                  ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        _result!['note'],
+                                        style: TextStyle(
+                                          color: Colors.green.shade700,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ],

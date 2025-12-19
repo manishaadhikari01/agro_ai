@@ -3,8 +3,9 @@ import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
 import '../utils/config.dart';
 import 'forgot_password_screen.dart';
-import 'registration_screen.dart';
+import 'otp_request_screen.dart';
 import 'main_app_screen.dart';
+import '../utils/app_mode.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -148,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const RegistrationScreen(),
+                          builder: (context) => const OtpRequestScreen(),
                         ),
                       );
                     },
@@ -175,18 +176,25 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     final authController = Provider.of<AuthController>(context, listen: false);
+
+    FocusScope.of(context).unfocus();
+
     final success = await authController.loginUser(
-      _phoneController.text.trim(),
-      _passwordController.text,
+      phone: _phoneController.text.trim(),
+      password: _passwordController.text,
     );
 
     if (success && mounted) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Login successful!')));
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MainAppScreen()),
+        MaterialPageRoute(
+          builder:
+              (context) => const MainAppScreen(mode: AppMode.authenticated),
+        ),
       );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -4,9 +4,13 @@ import '../controllers/auth_controller.dart';
 import '../utils/config.dart';
 import 'login_screen.dart';
 import 'main_app_screen.dart';
+import '../utils/app_mode.dart';
+import 'otp_request_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({super.key});
+  final String verifiedPhone;
+
+  const RegistrationScreen({super.key, required this.verifiedPhone});
 
   @override
   _RegistrationScreenState createState() => _RegistrationScreenState();
@@ -20,6 +24,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   final TextEditingController _stateController = TextEditingController();
+  final TextEditingController _districtController = TextEditingController();
   final TextEditingController _cropsController = TextEditingController();
 
   final _basicFormKey = GlobalKey<FormState>();
@@ -34,8 +39,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _mobileController.text = widget.verifiedPhone;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final authController = Provider.of<AuthController>(context);
+
+    if (!authController.isOtpVerifiedFor(widget.verifiedPhone)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const OtpRequestScreen()),
+        );
+      });
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A2216), // Dark forest green
@@ -94,17 +114,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       const SizedBox(height: 20),
                       TextFormField(
                         controller: _mobileController,
+                        readOnly: true,
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your mobile number';
-                          }
-                          if (!RegExp(r'^\d{10}$').hasMatch(value)) {
-                            return 'Please enter a valid 10-digit mobile number';
+                          if (!authController.isOtpVerifiedFor(
+                            widget.verifiedPhone,
+                          )) {
+                            return 'Phone must be OTP verified to register';
                           }
                           return null;
                         },
                         decoration: InputDecoration(
-                          labelText: 'Mobile Number*',
+                          labelText: 'Verified Mobile Number*',
                           labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.1),
@@ -300,6 +320,35 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
+                        controller: _districtController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your district';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'District',
+                          labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFE0E7C8),
+                            ),
+                          ),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
                         controller: _cropsController,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -428,6 +477,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   void _validateBasicInfo() {
+    final authController = Provider.of<AuthController>(context, listen: false);
+    if (!authController.isOtpVerifiedFor(widget.verifiedPhone)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please verify OTP before registering.')),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const OtpRequestScreen()),
+      );
+      return;
+    }
+
     if (_basicFormKey.currentState!.validate()) {
       setState(() {
         _showAdditionalDetails = true;
@@ -444,8 +505,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     final success = await authController.registerUser(
       name: _nameController.text.trim(),
       email: _emailController.text.trim(),
-      phone: _mobileController.text.trim(),
+
+      phone: widget.verifiedPhone,
       password: _passwordController.text,
+      district: _districtController.text.trim(),
       state: _stateController.text.trim(),
       crops: _cropsController.text.trim(),
       farmerType: _selectedFarmerType,
@@ -457,7 +520,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ).showSnackBar(const SnackBar(content: Text('Registration successful!')));
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MainAppScreen()),
+        MaterialPageRoute(
+          builder:
+              (context) => const MainAppScreen(mode: AppMode.authenticated),
+        ),
       );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -474,6 +540,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _stateController.dispose();
+    _districtController.dispose();
     _cropsController.dispose();
     super.dispose();
   }

@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../controllers/auth_controller.dart';
 import 'chatbot_screen.dart';
 import 'homescreen.dart';
 import 'profile.dart';
 import 'weather/weather_screen.dart';
 import 'user_check_screen.dart';
+import '../utils/app_mode.dart';
 
 class MainAppScreen extends StatefulWidget {
-  const MainAppScreen({super.key});
+  final AppMode mode;
+
+  const MainAppScreen({super.key, required this.mode});
 
   @override
   _MainAppScreenState createState() => _MainAppScreenState();
@@ -17,12 +18,16 @@ class MainAppScreen extends StatefulWidget {
 class _MainAppScreenState extends State<MainAppScreen> {
   int _selectedIndex = 0;
 
-  static List<Widget> _screens = [
-    const DashboardScreen(),
-    const WeatherScreen(),
-    const ChatbotScreen(),
-    const ProfileScreen(),
-  ];
+  List<Widget> get _screens {
+    final isGuest = widget.mode == AppMode.guest;
+
+    return [
+      const DashboardScreen(),
+      const WeatherScreen(),
+      isGuest ? _GuestBlockedScreen(feature: 'Chatbot') : const ChatbotScreen(),
+      isGuest ? _GuestBlockedScreen(feature: 'Profile') : const ProfileScreen(),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -32,32 +37,8 @@ class _MainAppScreenState extends State<MainAppScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authController = Provider.of<AuthController>(context);
-
     return Scaffold(
-      // Keep the branded header only on the home dashboard.
-      appBar:
-          _selectedIndex == 0
-              ? AppBar(
-                title: const Text('DeepShiva'),
-                backgroundColor: const Color(0xFF0A2216),
-                foregroundColor: const Color(0xFFE0E7C8),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.logout),
-                    onPressed: () {
-                      authController.logout();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const UserCheckScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              )
-              : null,
+      // No app bar - each screen manages its own header
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const [
@@ -73,6 +54,47 @@ class _MainAppScreenState extends State<MainAppScreen> {
         selectedItemColor: const Color(0xFF0A2216),
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
+      ),
+    );
+  }
+}
+
+class _GuestBlockedScreen extends StatelessWidget {
+  final String feature;
+
+  const _GuestBlockedScreen({required this.feature});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.lock, size: 80),
+            const SizedBox(height: 20),
+            Text(
+              '$feature requires login',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Please login or register to access this feature.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const UserCheckScreen()),
+                );
+              },
+              child: const Text('Login / Register'),
+            ),
+          ],
+        ),
       ),
     );
   }

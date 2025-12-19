@@ -1,154 +1,148 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/user.dart';
 import '../utils/config.dart';
+import 'token_service.dart';
 
 class AuthService {
-  // User Registration
-  static Future<bool> registerUser({
-    required String name,
-    required String email,
+  /// 📩 SEND OTP
+  static Future<bool> sendOtp({required String phone}) async {
+    try {
+      final response = await http.post(
+        Uri.parse("${Config.baseUrl}/auth/send-otp"),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone': phone}),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print("Send OTP failed: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Send OTP error: $e");
+      return false;
+    }
+  }
+
+  /// ✅ VERIFY OTP
+  static Future<bool> verifyOtp({
     required String phone,
-    required String password,
-    String? state,
-    String? crops,
-    String? farmerType,
+    required String otp,
   }) async {
     try {
       final response = await http.post(
-        Uri.parse(Config.registerEndpoint),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${Config.apiKey}', // If API key is required
-        },
+        Uri.parse("${Config.baseUrl}/auth/verify-otp"),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone': phone, 'otp': otp}),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print("Verify OTP failed: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Verify OTP error: $e");
+      return false;
+    }
+  }
+
+  /// 🔐 LOGIN
+  static Future<bool> login({
+    String? email,
+    String? phone,
+    required String password,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse("${Config.baseUrl}/auth/login"),
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'name': name,
-          'email': email,
           'phone': phone,
+          'email': email,
           'password': password,
-          'state': state,
-          'crops': crops,
-          'farmerType': farmerType,
         }),
       );
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        // Registration successful
-        return true;
-      } else {
-        // Handle registration failure
-        print('Registration failed: ${response.body}');
-        return false;
-      }
-    } catch (e) {
-      print('Error during registration: $e');
-      return false;
-    }
-  }
-
-  // User Login
-  static Future<Map<String, dynamic>?> loginUser(
-    String phone,
-    String password,
-  ) async {
-    try {
-      final response = await http.post(
-        Uri.parse(Config.loginEndpoint),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${Config.apiKey}', // If API key is required
-        },
-        body: jsonEncode({'phone': phone, 'password': password}),
-      );
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // Assuming the response contains user data and token
-        return {'user': User.fromJson(data['user']), 'token': data['token']};
+        await TokenService.saveTokens(
+          data['access_token'],
+          data['refresh_token'],
+        );
+        return true;
       } else {
-        print('Login failed: ${response.body}');
-        return null;
+        print("Login failed: ${response.body}");
+        return false;
       }
     } catch (e) {
-      print('Error during login: $e');
-      return null;
+      print("Login error: $e");
+      return false;
     }
   }
 
-  // Forgot Password
-  static Future<bool> forgotPassword(String email) async {
+  /// 📝 REGISTER
+  static Future<bool> register({
+    required String name,
+    required String phone,
+    required String district,
+    String? email,
+    String? state,
+
+    String? crops,
+    String? farmerType,
+    required String password,
+  }) async {
     try {
       final response = await http.post(
-        Uri.parse(Config.forgotPasswordEndpoint),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${Config.apiKey}', // If API key is required
-        },
-        body: jsonEncode({'email': email}),
+        Uri.parse("${Config.baseUrl}/auth/register"),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'name': name,
+          'phone': phone,
+          'email': email,
+          'state': state,
+          'district': district ?? 'unknown',
+          'crops': crops,
+          'farmerType': farmerType,
+          'password': password,
+          'confirm_password': password,
+        }),
       );
 
-      if (response.statusCode == 200) {
-        // Password reset request successful
-        return true;
-      } else {
-        print('Forgot password failed: ${response.body}');
-        return false;
-      }
-    } catch (e) {
-      print('Error during forgot password: $e');
-      return false;
-    }
-  }
+      print("REGISTER STATUS: ${response.statusCode}");
+      print("REGISTER BODY: ${response.body}");
+      print("DISTRICT SENT TO API => '$district'");
 
-  // Fetch User Data
-  static Future<User?> fetchUserData(String userId, String token) async {
-    try {
-      final response = await http.get(
-        Uri.parse('${Config.userDataEndpoint}/$userId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        return User.fromJson(data);
-      } else {
-        print('Failed to fetch user data: ${response.body}');
-        return null;
-      }
-    } catch (e) {
-      print('Error fetching user data: $e');
-      return null;
-    }
-  }
 
-  // Update User Data
-  static Future<bool> updateUserData(
-    String userId,
-    String token,
-    Map<String, dynamic> updates,
-  ) async {
-    try {
-      final response = await http.put(
-        Uri.parse('${Config.userDataEndpoint}/$userId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(updates),
-      );
+        await TokenService.saveTokens(
+          data['access_token'],
+          data['refresh_token'],
+        );
 
-      if (response.statusCode == 200) {
         return true;
       } else {
-        print('Failed to update user data: ${response.body}');
+        print("Registration failed: ${response.body}");
         return false;
       }
     } catch (e) {
-      print('Error updating user data: $e');
+      print("Registration error: $e");
       return false;
     }
+  }
+
+  /// ✅ CHECK LOGIN
+  static Future<bool> isLoggedIn() async {
+    final token = await TokenService.getAccessToken();
+    return token != null;
+  }
+
+  /// 🚪 LOGOUT
+  static Future<void> logout() async {
+    await TokenService.clear();
   }
 }

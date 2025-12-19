@@ -21,12 +21,12 @@ class _WeatherScreenState extends State<WeatherScreen> {
   @override
   void initState() {
     super.initState();
-    fetchWeatherData('Mumbai');
+    fetchWeatherData('Dehradun');
   }
 
   static const String API_KEY = "713ff79d2e664d33a9b151509251412";
 
-  String location = 'Mumbai';
+  String location = 'Dehradun';
   String weatherIcon = 'assests/heavycloudy.png';
   int temperature = 0;
   int hightemp = 0;

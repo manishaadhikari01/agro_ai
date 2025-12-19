@@ -34,8 +34,11 @@ async def predict_plant_disease(file: UploadFile = File(...)):
     # Clean up temp file
     temp_path.unlink(missing_ok=True)
 
+     # ✅ FIX: Use TOP-1 confidence
+    top_confidence = result["confidence"][0]
+
      # 🔑 Confidence handling (HERE)
-    if result["confidence"] < CONFIDENCE_THRESHOLD:
+    if top_confidence  < CONFIDENCE_THRESHOLD:
         result["note"] = (
             "Low confidence prediction. "
             "Please upload a clearer image or inspect manually."

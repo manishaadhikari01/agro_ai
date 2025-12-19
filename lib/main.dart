@@ -18,6 +18,7 @@ class DeepShivaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'DeepShiva',
       theme: ThemeData(
         primarySwatch: Colors.green,

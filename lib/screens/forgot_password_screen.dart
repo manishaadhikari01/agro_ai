@@ -1,190 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../controllers/auth_controller.dart';
-import 'login_screen.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
+class ForgotPasswordScreen extends StatelessWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
-}
-
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _isRequestSent = false;
-
-  @override
   Widget build(BuildContext context) {
-    final authController = Provider.of<AuthController>(context);
-
     return Scaffold(
-      backgroundColor: const Color(0xFF0A2216), // Dark forest green
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 100),
-              const Text(
-                'Reset Password',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFE0E7C8), // Light cream
-                  fontFamily: 'Inter',
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Enter your email address and we\'ll send you a link to reset your password.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Color(0xFFE0E7C8),
-                  fontFamily: 'Inter',
-                ),
-              ),
-              const SizedBox(height: 40),
-              if (!_isRequestSent) ...[
-                Form(
-                  key: _formKey,
-                  child: TextFormField(
-                    controller: _emailController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Email / Username',
-                      labelStyle: const TextStyle(color: Color(0xFFE0E7C8)),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.1),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE0E7C8)),
-                      ),
-                    ),
-                    style: const TextStyle(color: Colors.white),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                ),
-                const SizedBox(height: 40),
-                ElevatedButton(
-                  onPressed:
-                      authController.isLoading ? null : _requestPasswordReset,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE0E7C8),
-                    foregroundColor: const Color(0xFF0A2216),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  child:
-                      authController.isLoading
-                          ? const CircularProgressIndicator()
-                          : const Text(
-                            'Request New Password',
-                            style: TextStyle(fontSize: 18, fontFamily: 'Inter'),
-                          ),
-                ),
-              ] else ...[
-                const Icon(
-                  Icons.check_circle,
-                  color: Color(0xFFE0E7C8),
-                  size: 80,
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Password reset link sent!',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFE0E7C8),
-                    fontFamily: 'Inter',
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Check your email for instructions to reset your password.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFFE0E7C8),
-                    fontFamily: 'Inter',
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 40),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE0E7C8),
-                    foregroundColor: const Color(0xFF0A2216),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  child: const Text(
-                    'Go Back to Login',
-                    style: TextStyle(fontSize: 18, fontFamily: 'Inter'),
-                  ),
-                ),
-              ],
-            ],
-          ),
+      appBar: AppBar(title: const Text("Forgot Password")),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.lock_reset, size: 80),
+            const SizedBox(height: 20),
+            const Text(
+              "Password reset via OTP will be available soon.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              "For now, please login using your registered phone number or email.",
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Back to Login"),
+            ),
+          ],
         ),
       ),
     );
-  }
-
-  Future<void> _requestPasswordReset() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    final authController = Provider.of<AuthController>(context, listen: false);
-    final success = await authController.forgotPassword(
-      _emailController.text.trim(),
-    );
-
-    if (success && mounted) {
-      setState(() {
-        _isRequestSent = true;
-      });
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to send reset email. Please try again.'),
-        ),
-      );
-    }
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    super.dispose();
   }
 }

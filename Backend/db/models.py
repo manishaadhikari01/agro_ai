@@ -108,5 +108,36 @@ class RefreshToken(Base):
     revoked = Column(Boolean, default=False)
 
     user = relationship("User", backref="refresh_tokens")
+
+# ------------------ FIELD (LAND) ------------------
+class Field(Base):
+    __tablename__ = "fields"
+
+    id = Column(String, primary_key=True, default=uuid_str)
+
+    # Owner (AgroAI user)
+    user_id = Column(String, ForeignKey("users.id"), index=True, nullable=False)
+
+    # Farmer-friendly name
+    field_name = Column(String, nullable=False)
+
+    # AgroMonitoring polygon ID
+    polygon_id = Column(String, unique=True, nullable=False)
+
+    # Geometry metadata (from AgroMonitoring response)
+    area_hectare = Column(Integer, nullable=True)
+    center_lat = Column(String, nullable=True)
+    center_lon = Column(String, nullable=True)
+
+    # Agricultural context
+    crop_type = Column(String, nullable=True)
+    season = Column(String, nullable=True)
+
+    # Status & audit
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationship
+    user = relationship("User", backref="fields")
     
     

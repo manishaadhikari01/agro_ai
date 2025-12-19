@@ -1,55 +1,141 @@
 import 'package:flutter/material.dart';
-import '../models/user.dart';
 import '../services/auth_service.dart';
+import '../services/token_service.dart';
 
-class AuthController extends ChangeNotifier {
-  User? _currentUser;
-  String? _authToken;
-  bool _isLoading = false;
+class AuthController with ChangeNotifier {
   bool _isLoggedIn = false;
+  bool _isLoading = false;
 
-  User? get currentUser => _currentUser;
-  String? get authToken => _authToken;
-  bool get isLoading => _isLoading;
+  bool _otpVerified = false;
+  String? _verifiedPhone;
+
   bool get isLoggedIn => _isLoggedIn;
+  bool get isLoading => _isLoading;
+  bool get isOtpVerified => _otpVerified;
+  String? get verifiedPhone => _verifiedPhone;
 
-  // User Registration
-  Future<bool> registerUser({
-    required String name,
-    required String email,
-    required String phone,
+  bool isOtpVerifiedFor(String phone) {
+    return _otpVerified && _verifiedPhone == phone;
+  }
+
+  // ---------------- AUTH STATE ----------------
+
+  /// Check auth state from stored JWT
+  Future<void> checkAuthStatus() async {
+    final token = await TokenService.getAccessToken();
+    _isLoggedIn = token != null;
+    notifyListeners();
+  }
+
+  // ---------------- LOGIN ----------------
+  /// Login user
+  Future<bool> loginUser({
+    String? phone,
+    String? email,
     required String password,
-    String? state,
-    String? crops,
-    String? farmerType,
   }) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final success = await AuthService.registerUser(
-        name: name,
-        email: email,
+      final success = await AuthService.login(
         phone: phone,
+        email: email,
+        password: password,
+      );
+
+      if (!success) return false;
+
+      // 🔐 VERIFY TOKEN EXISTS (REAL AUTH)
+      final token = await TokenService.getAccessToken();
+      _isLoggedIn = token != null;
+
+      return _isLoggedIn;
+    } catch (e) {
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ---------------- OTP ----------------
+  /// Send OTP to phone
+  Future<bool> sendOtp({required String phone}) async {
+    _otpVerified = false;
+    _verifiedPhone = null;
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final sent = await AuthService.sendOtp(phone: phone);
+      return sent;
+    } catch (e) {
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Verify OTP
+  Future<bool> verifyOtp({required String phone, required String otp}) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final verified = await AuthService.verifyOtp(phone: phone, otp: otp);
+      if (verified) {
+        _otpVerified = true;
+        _verifiedPhone = phone;
+      }
+      return verified;
+    } catch (e) {
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// 🆕 Register user
+  Future<bool> registerUser({
+    required String name,
+    required String phone,
+    String? email,
+    required String password,
+    String? state,
+    String? district,
+    String? crops,
+    String? farmerType,
+  }) async {
+    if (!isOtpVerifiedFor(phone)) {
+      return false;
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final success = await AuthService.register(
+        name: name,
+        phone: phone,
+        email: email,
         password: password,
         state: state,
+        district: district ?? 'unknown',
         crops: crops,
         farmerType: farmerType,
       );
 
-      if (success) {
-        // After successful registration, automatically log in the user
-        final loginResult = await AuthService.loginUser(email, password);
-        if (loginResult != null) {
-          _currentUser = loginResult['user'];
-          _authToken = loginResult['token'];
-          _isLoggedIn = true;
-        }
-      }
+      if (!success) return false;
 
-      return success;
+      // 🔐 Only logged in if token exists
+      final token = await TokenService.getAccessToken();
+      _isLoggedIn = token != null;
+
+      return _isLoggedIn;
     } catch (e) {
-      print('Registration error: $e');
       return false;
     } finally {
       _isLoading = false;
@@ -57,119 +143,13 @@ class AuthController extends ChangeNotifier {
     }
   }
 
-  // User Login
-  Future<bool> loginUser(String phone, String password) async {
-    _isLoading = true;
-    notifyListeners();
+  // ---------------- LOGOUT ----------------
 
-    try {
-      final result = await AuthService.loginUser(phone, password);
-      if (result != null) {
-        _currentUser = result['user'];
-        _authToken = result['token'];
-        _isLoggedIn = true;
-        return true;
-      }
-      return false;
-    } catch (e) {
-      print('Login error: $e');
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  // Forgot Password
-  Future<bool> forgotPassword(String email) async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      final success = await AuthService.forgotPassword(email);
-      return success;
-    } catch (e) {
-      print('Forgot password error: $e');
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  // Fetch User Data
-  Future<bool> fetchUserData() async {
-    if (_currentUser == null || _authToken == null) return false;
-
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      final user = await AuthService.fetchUserData(
-        _currentUser!.id,
-        _authToken!,
-      );
-      if (user != null) {
-        _currentUser = user;
-        return true;
-      }
-      return false;
-    } catch (e) {
-      print('Fetch user data error: $e');
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  // Update User Data
-  Future<bool> updateUserData(Map<String, dynamic> updates) async {
-    if (_currentUser == null || _authToken == null) return false;
-
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      final success = await AuthService.updateUserData(
-        _currentUser!.id,
-        _authToken!,
-        updates,
-      );
-      if (success) {
-        // Update local user data
-        _currentUser = _currentUser!.copyWith(
-          name: updates['name'],
-          email: updates['email'],
-          phone: updates['phone'],
-          state: updates['state'],
-          crops: updates['crops'],
-          farmerType: updates['farmerType'],
-        );
-      }
-      return success;
-    } catch (e) {
-      print('Update user data error: $e');
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  // Logout
-  void logout() {
-    _currentUser = null;
-    _authToken = null;
+  Future<void> logout() async {
+    await TokenService.clear(); // ✅ CRITICAL
     _isLoggedIn = false;
-    notifyListeners();
-  }
-
-  // Check Authentication Status (e.g., on app start)
-  void checkAuthStatus() {
-    // This could check shared preferences or secure storage for saved tokens
-    // For now, we'll assume no persistent login
-    _isLoggedIn = false;
+    _otpVerified = false;
+    _verifiedPhone = null;
     notifyListeners();
   }
 }
