@@ -7,7 +7,7 @@ import 'disease_detection.dart';
 import 'chatbot_screen.dart';
 import 'gov_schemes_screen.dart';
 import 'crop_recommendation.dart';
-import 'market_prices_screen.dart';
+import 'market_crop_grid_screen.dart';
 import 'voice_chat_screen.dart';
 import '../services/profile_service.dart';
 import 'package:video_player/video_player.dart';
@@ -444,7 +444,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const MarketPricesScreen(),
+                          builder: (context) => const MarketCropGridScreen(),
                         ),
                       );
                     }),

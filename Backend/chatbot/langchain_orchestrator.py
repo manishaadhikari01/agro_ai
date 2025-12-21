@@ -12,7 +12,7 @@ Use the following context if relevant:
 {context}
 
 Question: {query}
-Answer in simple, short, and local-friendly English or Hindi."""
+Answer in simple and local-friendly English or Hindi.Keep the answers as short as you can without removing necessary information."""
 
     response = await get_hf_response(prompt)
     return response

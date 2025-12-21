@@ -3,7 +3,9 @@ import '../services/chatbot_service.dart';
 import '../services/token_service.dart';
 import '../services/chat_session.dart';
 import 'login_screen.dart';
+
 import '../services/voice_service.dart';
+import '../services/voiceservice.dart';
 import 'voice_chat_screen.dart';
 
 class ChatbotScreen extends StatefulWidget {
@@ -16,6 +18,7 @@ class ChatbotScreen extends StatefulWidget {
 class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _controller = TextEditingController();
   final VoiceService _voice = VoiceService();
+  final VoiceService1 _voice1 = VoiceService1();
 
   bool _isLoading = false;
 
@@ -24,6 +27,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     super.initState();
     _checkAuth();
     _voice.init();
+
+    _initVoice();
+  }
+
+  Future<void> _initVoice() async {
+    bool ok = await _voice1.init();
+    if (!ok) {
+      print("Speech service not available or permission denied");
+    }
   }
 
   Future<void> _checkAuth() async {

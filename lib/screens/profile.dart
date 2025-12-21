@@ -91,8 +91,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _item('Email', _profile?['email']),
             _item('State', _profile?['state']),
             _item('District', _profile?['district']),
+            _item('Address', _profile?['address']),
             _item('Farmer Type', _profile?['farmer_type']),
-            _item('Crops', _profile?['crops']),
+            _item('Crops', _profile?['crops_grown']),
 
             const SizedBox(height: 24),
 
@@ -147,7 +148,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final districtCtrl = TextEditingController(
       text: _profile?['district'] ?? '',
     );
-    final cropsCtrl = TextEditingController(text: _profile?['crops'] ?? '');
+    final addressCtrl = TextEditingController(text: _profile?['address'] ?? '');
+
+    final cropsCtrl = TextEditingController(
+      text: _profile?['crops_grown'] ?? '',
+    );
 
     showDialog(
       context: context,
@@ -174,6 +179,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     decoration: const InputDecoration(labelText: 'District'),
                   ),
                   TextField(
+                    controller: addressCtrl,
+                    decoration: const InputDecoration(labelText: 'Address'),
+                  ),
+                  TextField(
                     controller: cropsCtrl,
                     decoration: const InputDecoration(labelText: 'Crops'),
                   ),
@@ -194,6 +203,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       'state': stateCtrl.text,
                       'district': districtCtrl.text,
                       'crops': cropsCtrl.text,
+                      'address': addressCtrl.text,
                     },
                   );
 

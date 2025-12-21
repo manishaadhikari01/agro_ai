@@ -144,7 +144,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
     // Determine background based on temperature (convert F to C)
     String backgroundImage =
-        temperature < 15
+        temperature < 20
             ? 'lib/screens/weather/assests/cold.jpeg'
             : 'lib/screens/weather/assests/hot.jpeg';
 

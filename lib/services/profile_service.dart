@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../utils/config.dart';
 import 'token_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileService {
   static Future<Map<String, dynamic>?> fetchProfile() async {
@@ -15,7 +16,22 @@ class ProfileService {
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+
+        final prefs = await SharedPreferences.getInstance();
+
+        // SAVE LOCATION FIELDS
+        if (data['state'] != null) {
+          prefs.setString('state', data['state']);
+        }
+        if (data['district'] != null) {
+          prefs.setString('district', data['district']);
+        }
+        if (data['address'] != null) {
+          prefs.setString('address', data['address']);
+        }
+
+        return data;
       }
 
       if (response.statusCode == 401) {
@@ -27,6 +43,16 @@ class ProfileService {
     } catch (e) {
       return null;
     }
+  }
+
+  static Future<Map<String, String?>> getLocation() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    return {
+      'state': prefs.getString('state'),
+      'district': prefs.getString('district'),
+      'address': prefs.getString('address'),
+    };
   }
 
   static Future<bool> updateProfile({
